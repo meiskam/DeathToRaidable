@@ -9,7 +9,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +18,7 @@ import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.FactionColl;
 import com.massivecraft.factions.entity.MConf;
 import com.massivecraft.factions.entity.MPlayer;
+import com.massivecraft.factions.event.EventFactionsCreate;
 import com.massivecraft.massivecore.xlib.gson.JsonElement;
 import com.massivecraft.massivecore.xlib.gson.JsonObject;
 
@@ -39,15 +39,19 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     	decimalFormat.setMaximumFractionDigits(1);
 
         for (Faction faction : FactionColl.get().getAll()) {
-        	ensureFactionTimeNext(faction);
-        	ensureFactionRatioMax(faction);
-        	ensureFactionRatioRemoved(faction);
-        	//TODO ensure raidable is set correctly
+        	setupFaction(faction);
         }
 
         ratioUpdateTask = new RatioUpdateTask(this).runTaskTimer(this, 0L, timer);
 
         Bukkit.getPluginManager().registerEvents(this, this);
+    }
+
+    void setupFaction(Faction faction) {
+    	ensureFactionTimeNext(faction);
+    	updateFactionRatioMax(faction);
+    	ensureFactionRatioRemoved(faction);
+    	//TODO ensure raidable is set correctly
     }
 
     @Override
@@ -70,7 +74,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.NORMAL)
+    @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event)
     {
         Player player = event.getEntity();
@@ -96,6 +100,11 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         	//TODO actually make them raidable
         	Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
         }
+    }
+
+    @EventHandler
+    public void onFactionsCreate(EventFactionsCreate event) {
+    	setupFaction(FactionColl.get().get(event.getFactionId()));
     }
 
     long getTime() {
@@ -126,6 +135,10 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
     	customData.remove(keyTimeNext);
         customData.addProperty(keyTimeNext, time);
+    }
+
+    void updateFactionRatioMax(Faction faction) {
+    	setFactionRatioMax(faction, 2 + faction.getMPlayers().size());
     }
 
     void ensureFactionRatioMax(Faction faction) {
