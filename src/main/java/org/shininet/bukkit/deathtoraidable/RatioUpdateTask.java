@@ -1,6 +1,5 @@
 package org.shininet.bukkit.deathtoraidable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.massivecraft.factions.entity.Faction;
