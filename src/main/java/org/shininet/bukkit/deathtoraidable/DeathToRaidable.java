@@ -36,7 +36,11 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         
         Bukkit.getPluginManager().registerEvents(this, this);
         // TODO start 5 minute timer to check if DTR should be raised
-        // TODO ensure all custom data is setup
+        for (Faction faction : FactionColl.get().getAll()) {
+        	ensureFactionTimeNext(faction);
+        	ensureFactionRatioMax(faction);
+        	ensureFactionRatioRemoved(faction);
+        }
     }
 
     @Override
