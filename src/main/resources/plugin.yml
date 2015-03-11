@@ -12,3 +12,8 @@ commands:
   DeathToRaidable:
     description: View the DTR of a faction
     aliases: dtr
+
+permissions:
+  deathtoraidable.enable:
+    description: DTR changes when player dies
+    default: false
