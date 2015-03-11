@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.massivecraft.factions.Rel;
@@ -105,13 +106,30 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	}
 
 	@EventHandler
-	public void onFactionsCreate(EventFactionsCreate event) {
-		setupFaction(FactionColl.get().get(event.getFactionId()));
+	public void onFactionsCreate(final EventFactionsCreate event) {
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				setupFaction(FactionColl.get().get(event.getFactionId()));
+			}
+		}.runTaskLater(this, 1L);
 	}
 
 	@EventHandler
 	public void onFactionsMembershipChange(EventFactionsMembershipChange event) {
-		updateFactionRatioMax(event.getNewFaction());
+		final String factionOld = event.getMPlayer().getFactionId();
+		final String factionNew = event.getNewFaction().getId();
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (FactionColl.get().containsId(factionOld)) {
+					updateFactionRatioMax(FactionColl.get().get(factionOld));
+				}
+				if (FactionColl.get().containsId(factionNew)) {
+					updateFactionRatioMax(FactionColl.get().get(factionNew));
+				}
+			}
+		}.runTaskLater(this, 1L);
 	}
 
 	long getTime() {
