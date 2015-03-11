@@ -51,6 +51,10 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	}
 
 	void setupFaction(Faction faction) {
+		JsonObject customData = faction.getCustomData();
+		if (customData == null) {
+			faction.setCustomData(new JsonObject());
+		}
 		ensureFactionTimeNext(faction);
 		updateFactionRatioMax(faction);
 		ensureFactionRatioRemoved(faction);
