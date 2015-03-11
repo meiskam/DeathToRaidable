@@ -5,3 +5,5 @@ author: meiskam
 
 main: org.shininet.bukkit.deathtoraidable.DeathToRaidable
 database: false
+
+depend: [Factions]
