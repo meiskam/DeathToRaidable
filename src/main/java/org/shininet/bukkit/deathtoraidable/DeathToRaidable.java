@@ -42,6 +42,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         	ensureFactionTimeNext(faction);
         	ensureFactionRatioMax(faction);
         	ensureFactionRatioRemoved(faction);
+        	//TODO ensure raidable is set correctly
         }
 
         ratioUpdateTask = new RatioUpdateTask(this).runTaskTimer(this, 0L, timer);
@@ -64,7 +65,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         	sender.sendMessage("Faction could not be found");
         	return true;
         } else {
-        	sender.sendMessage(faction.getName() + "'s DTR is " + getFactionDisplayRatio(faction));
+        	sender.sendMessage(faction.getName() + " DTR is " + getFactionDisplayRatio(faction));
         	return true;
         }
     }
@@ -89,7 +90,12 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         if (ratioRemoved == 0) {
         	setFactionTimeNext(faction, getTimePlusTimeout());
         }
-        setFactionRatioRemoved(faction, ++ratioRemoved);
+        ratioRemoved += 2;
+        setFactionRatioRemoved(faction, ratioRemoved);
+        if (getFactionRatioTimesTwo(faction) == 0 || getFactionRatioTimesTwo(faction) == -1) {
+        	//TODO actually make them raidable
+        	Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
+        }
     }
 
     long getTime() {
@@ -164,6 +170,10 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
     	customData.remove(keyRatioRemoved);
         customData.addProperty(keyRatioRemoved, amount);
+    }
+
+    int getFactionRatioTimesTwo(Faction faction) {
+    	return getFactionRatioMax(faction) - getFactionRatioRemoved(faction);
     }
 
     String getFactionDisplayRatio(Faction faction) {
