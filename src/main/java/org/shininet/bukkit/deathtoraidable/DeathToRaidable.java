@@ -13,6 +13,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.FactionColl;
@@ -26,6 +27,9 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	static String keyTimeNext = "DeathToRaidable.timeNext";
 	static String keyRatioMax = "DeathToRaidable.ratioMax";
 	static String keyRatioRemoved = "DeathToRaidable.ratioRemoved";
+	static int timeout = 1*60*60; //seconds
+	static long timer = 5*60*20; //ticks
+	BukkitTask ratioUpdateTask;
 
 	static NumberFormat decimalFormat = DecimalFormat.getInstance();
 
@@ -33,14 +37,16 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     public void onEnable() {
     	decimalFormat.setMinimumFractionDigits(0);
     	decimalFormat.setMaximumFractionDigits(1);
-        
-        Bukkit.getPluginManager().registerEvents(this, this);
-        // TODO start 5 minute timer to check if DTR should be raised
+
         for (Faction faction : FactionColl.get().getAll()) {
         	ensureFactionTimeNext(faction);
         	ensureFactionRatioMax(faction);
         	ensureFactionRatioRemoved(faction);
         }
+
+        ratioUpdateTask = new RatioUpdateTask(this).runTaskTimer(this, 0L, timer);
+
+        Bukkit.getPluginManager().registerEvents(this, this);
     }
 
     @Override
@@ -91,7 +97,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     }
 
     long getTimePlusTimeout() {
-    	return getTime() + (1*60*60);
+    	return getTime() + timeout;
     }
 
     void ensureFactionTimeNext(Faction faction) {
