@@ -19,6 +19,7 @@ import com.massivecraft.factions.entity.FactionColl;
 import com.massivecraft.factions.entity.MConf;
 import com.massivecraft.factions.entity.MPlayer;
 import com.massivecraft.factions.event.EventFactionsCreate;
+import com.massivecraft.factions.event.EventFactionsMembershipChange;
 import com.massivecraft.massivecore.xlib.gson.JsonElement;
 import com.massivecraft.massivecore.xlib.gson.JsonObject;
 
@@ -96,15 +97,16 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
         }
         ratioRemoved += 2;
         setFactionRatioRemoved(faction, ratioRemoved);
-        if (getFactionRatioTimesTwo(faction) == 0 || getFactionRatioTimesTwo(faction) == -1) {
-        	//TODO actually make them raidable
-        	Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
-        }
     }
 
     @EventHandler
     public void onFactionsCreate(EventFactionsCreate event) {
     	setupFaction(FactionColl.get().get(event.getFactionId()));
+    }
+
+    @EventHandler
+    public void onFactionsMembershipChange(EventFactionsMembershipChange event) {
+    	updateFactionRatioMax(event.getNewFaction());
     }
 
     long getTime() {
@@ -157,10 +159,13 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     }
 
     void setFactionRatioMax(Faction faction, int amount) {
+    	int pre = getFactionRatioTimesTwo(faction);
         JsonObject customData = faction.getCustomData();
 
     	customData.remove(keyRatioMax);
         customData.addProperty(keyRatioMax, amount);
+
+    	checkFactionRaidableUpdate(faction, pre, getFactionRatioTimesTwo(faction));
     }
 
     void ensureFactionRatioRemoved(Faction faction) {
@@ -179,10 +184,13 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     }
 
     void setFactionRatioRemoved(Faction faction, int amount) {
+    	int pre = getFactionRatioTimesTwo(faction);
         JsonObject customData = faction.getCustomData();
 
     	customData.remove(keyRatioRemoved);
         customData.addProperty(keyRatioRemoved, amount);
+
+    	checkFactionRaidableUpdate(faction, pre, getFactionRatioTimesTwo(faction));
     }
 
     int getFactionRatioTimesTwo(Faction faction) {
@@ -192,5 +200,24 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     String getFactionDisplayRatio(Faction faction) {
     	double result = getFactionRatioMax(faction) - getFactionRatioRemoved(faction);
     	return decimalFormat.format(result/2);
+    }
+
+    void checkFactionRaidableUpdate(Faction faction, int pre, int post) {
+    	if (pre > 0 && post <= 0) {
+    		setFactionRaidable(faction);
+    	}
+    	if (pre <= 0 && post > 0) {
+    		setFactionNonRaidable(faction);
+    	}
+    }
+
+    void setFactionRaidable(Faction faction) {
+    	//TODO actually make them raidable
+    	Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
+    }
+
+    void setFactionNonRaidable(Faction faction) {
+    	//TODO actually make them non-raidable
+    	Bukkit.broadcastMessage(faction.getName() + " DTR has replenished and are no longer raidable.");
     }
 }
