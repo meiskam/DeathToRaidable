@@ -14,9 +14,11 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.massivecraft.factions.Rel;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.FactionColl;
 import com.massivecraft.factions.entity.MConf;
+import com.massivecraft.factions.entity.MPerm;
 import com.massivecraft.factions.entity.MPlayer;
 import com.massivecraft.factions.event.EventFactionsCreate;
 import com.massivecraft.factions.event.EventFactionsMembershipChange;
@@ -52,7 +54,6 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
     	ensureFactionTimeNext(faction);
     	updateFactionRatioMax(faction);
     	ensureFactionRatioRemoved(faction);
-    	//TODO ensure raidable is set correctly
     }
 
     @Override
@@ -204,20 +205,64 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
     void checkFactionRaidableUpdate(Faction faction, int pre, int post) {
     	if (pre > 0 && post <= 0) {
-    		setFactionRaidable(faction);
+    		setFactionRaidable(faction, true);
     	}
     	if (pre <= 0 && post > 0) {
-    		setFactionNonRaidable(faction);
+    		setFactionNonRaidable(faction, true);
     	}
     }
 
-    void setFactionRaidable(Faction faction) {
-    	//TODO actually make them raidable
-    	Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
+    void setFactionRaidable(Faction faction, boolean broadcast) {
+    	MPerm build = MPerm.get(MPerm.ID_BUILD);
+    	MPerm container = MPerm.get(MPerm.ID_CONTAINER);
+
+		faction.setRelationPermitted(build, Rel.LEADER, true);
+		faction.setRelationPermitted(build, Rel.OFFICER, true);
+		faction.setRelationPermitted(build, Rel.MEMBER, true);
+		faction.setRelationPermitted(build, Rel.RECRUIT, true);
+		faction.setRelationPermitted(build, Rel.ALLY, true);
+		faction.setRelationPermitted(build, Rel.TRUCE, true);
+		faction.setRelationPermitted(build, Rel.NEUTRAL, true);
+		faction.setRelationPermitted(build, Rel.ENEMY, true);
+
+		faction.setRelationPermitted(container, Rel.LEADER, true);
+		faction.setRelationPermitted(container, Rel.OFFICER, true);
+		faction.setRelationPermitted(container, Rel.MEMBER, true);
+		faction.setRelationPermitted(container, Rel.RECRUIT, true);
+		faction.setRelationPermitted(container, Rel.ALLY, true);
+		faction.setRelationPermitted(container, Rel.TRUCE, true);
+		faction.setRelationPermitted(container, Rel.NEUTRAL, true);
+		faction.setRelationPermitted(container, Rel.ENEMY, true);
+
+    	if (broadcast) {
+    		Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
+    	}
     }
 
-    void setFactionNonRaidable(Faction faction) {
-    	//TODO actually make them non-raidable
-    	Bukkit.broadcastMessage(faction.getName() + " DTR has replenished and are no longer raidable.");
+    void setFactionNonRaidable(Faction faction, boolean broadcast) {
+    	MPerm build = MPerm.get(MPerm.ID_BUILD);
+    	MPerm container = MPerm.get(MPerm.ID_CONTAINER);
+
+		faction.setRelationPermitted(build, Rel.LEADER, true);
+		faction.setRelationPermitted(build, Rel.OFFICER, true);
+		faction.setRelationPermitted(build, Rel.MEMBER, true);
+		faction.setRelationPermitted(build, Rel.RECRUIT, false);
+		faction.setRelationPermitted(build, Rel.ALLY, false);
+		faction.setRelationPermitted(build, Rel.TRUCE, false);
+		faction.setRelationPermitted(build, Rel.NEUTRAL, false);
+		faction.setRelationPermitted(build, Rel.ENEMY, false);
+
+		faction.setRelationPermitted(container, Rel.LEADER, true);
+		faction.setRelationPermitted(container, Rel.OFFICER, true);
+		faction.setRelationPermitted(container, Rel.MEMBER, true);
+		faction.setRelationPermitted(container, Rel.RECRUIT, false);
+		faction.setRelationPermitted(container, Rel.ALLY, false);
+		faction.setRelationPermitted(container, Rel.TRUCE, false);
+		faction.setRelationPermitted(container, Rel.NEUTRAL, false);
+		faction.setRelationPermitted(container, Rel.ENEMY, false);
+
+    	if (broadcast) {
+    		Bukkit.broadcastMessage(faction.getName() + " DTR has replenished and are no longer raidable.");
+    	}
     }
 }
