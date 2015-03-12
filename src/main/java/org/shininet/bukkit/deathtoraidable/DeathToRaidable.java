@@ -35,7 +35,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	static long timer = 3*60*20; //ticks .. every 3 minutes add 0.05
 	static int timerRemove = 5;
 	BukkitTask ratioUpdateTask;
-	static boolean debug = true;
+	static boolean debug = false;
 
 	static NumberFormat decimalFormat = DecimalFormat.getInstance();
 
