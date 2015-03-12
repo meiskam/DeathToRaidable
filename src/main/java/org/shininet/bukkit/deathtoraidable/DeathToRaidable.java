@@ -81,10 +81,10 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
 		Faction faction = FactionColl.get().getByName(StringUtils.join(args, ' '));
 		if (faction == null) {
-			sender.sendMessage("Faction could not be found");
+			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6DTR&8] &eFaction could not be found"));
 			return true;
 		} else {
-			sender.sendMessage(faction.getName() + " DTR is " + getFactionDisplayRatio(faction));
+			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6DTR&8] &e" + faction.getName() + " DTR is &c" + getFactionDisplayRatio(faction)));
 			return true;
 		}
 	}
@@ -233,7 +233,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 		faction.setRelationPermitted(container, Rel.ENEMY, true);
 
 		if (broadcast) {
-			Bukkit.broadcastMessage(faction.getName() + " DTR has dropped and are now raidable!");
+			Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6DTR&8] &e" + faction.getName() + " is now raidable!"));
 		}
 	}
 
@@ -260,7 +260,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 		faction.setRelationPermitted(container, Rel.ENEMY, false);
 
 		if (broadcast) {
-			Bukkit.broadcastMessage(faction.getName() + " DTR has replenished and are no longer raidable.");
+			Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6DTR&8] &e" + faction.getName() + " is no longer raidable!"));
 		}
 	}
 }
