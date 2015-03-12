@@ -3,6 +3,8 @@ package org.shininet.bukkit.deathtoraidable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import net.md_5.bungee.api.ChatColor;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -102,6 +104,8 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 		if (faction == Faction.get(MConf.get().defaultPlayerFactionId)) {
 			return;
 		}
+
+		player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6DTR&8] &eYou lost &c1&e faction DTR. It takes an hour to regen back."));
 
 		int ratioRemoved = getFactionRatioRemoved(faction);
 		ratioRemoved += 100;
