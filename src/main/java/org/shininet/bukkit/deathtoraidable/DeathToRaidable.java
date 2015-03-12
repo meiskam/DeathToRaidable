@@ -28,13 +28,12 @@ import com.massivecraft.massivecore.xlib.gson.JsonObject;
 
 public class DeathToRaidable extends JavaPlugin implements Listener {
 
-	static String keyTimeNext = "DeathToRaidable.timeNext";
 	static String keyRatioMax = "DeathToRaidable.ratioMax";
 	static String keyRatioRemoved = "DeathToRaidable.ratioRemoved";
-	static int timeout = 1*60*60; //seconds
-	static long timer = 5*60*20; //ticks
+	static long timer = 3*60*20; //ticks .. every 3 minutes add 0.05
+	static int timerRemove = 5;
 	BukkitTask ratioUpdateTask;
-	static boolean debug = false;
+	static boolean debug = true;
 
 	static NumberFormat decimalFormat = DecimalFormat.getInstance();
 
@@ -46,8 +45,8 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
 	@Override
 	public void onEnable() {
-		decimalFormat.setMinimumFractionDigits(0);
-		decimalFormat.setMaximumFractionDigits(1);
+		decimalFormat.setMinimumFractionDigits(2);
+		decimalFormat.setMaximumFractionDigits(2);
 
 		for (Faction faction : FactionColl.get().getAll()) {
 			setupFaction(faction);
@@ -64,7 +63,6 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 		if (customData == null) {
 			faction.setCustomData(new JsonObject());
 		}
-		ensureFactionTimeNext(faction);
 		updateFactionRatioMax(faction);
 		ensureFactionRatioRemoved(faction);
 	}
@@ -106,10 +104,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 		}
 
 		int ratioRemoved = getFactionRatioRemoved(faction);
-		if (ratioRemoved == 0) {
-			setFactionTimeNext(faction, getTimePlusTimeout());
-		}
-		ratioRemoved += 2;
+		ratioRemoved += 100;
 		setFactionRatioRemoved(faction, ratioRemoved);
 	}
 
@@ -136,38 +131,8 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 		}.runTaskLater(this, 2L);
 	}
 
-	long getTime() {
-		return System.currentTimeMillis() / 1000L;
-	}
-
-	long getTimePlusTimeout() {
-		return getTime() + timeout;
-	}
-
-	void ensureFactionTimeNext(Faction faction) {
-		JsonObject customData = faction.getCustomData();
-
-		JsonElement jsonTimeNext = customData.get(keyTimeNext);
-		if (jsonTimeNext == null) {
-			customData.addProperty(keyTimeNext, 0);
-		}
-	}
-
-	long getFactionTimeNext(Faction faction) {
-		JsonObject customData = faction.getCustomData();
-		ensureFactionTimeNext(faction);
-		return customData.get(keyTimeNext).getAsLong();
-	}
-
-	void setFactionTimeNext(Faction faction, long time) {
-		JsonObject customData = faction.getCustomData();
-
-		customData.remove(keyTimeNext);
-		customData.addProperty(keyTimeNext, time);
-	}
-
 	void updateFactionRatioMax(Faction faction) {
-		setFactionRatioMax(faction, 2 + faction.getMPlayers().size());
+		setFactionRatioMax(faction, 100 + (faction.getMPlayers().size() * 50));
 	}
 
 	void ensureFactionRatioMax(Faction faction) {
@@ -175,7 +140,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
 		JsonElement jsonRatioMax = customData.get(keyRatioMax);
 		if (jsonRatioMax == null) {
-			customData.addProperty(keyRatioMax, 2 + faction.getMPlayers().size());
+			customData.addProperty(keyRatioMax, 100 + (faction.getMPlayers().size() * 50));
 		}
 	}
 
@@ -186,13 +151,13 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	}
 
 	void setFactionRatioMax(Faction faction, int amount) {
-		int pre = getFactionRatioTimesTwo(faction);
+		int pre = getFactionRatioInternal(faction);
 		JsonObject customData = faction.getCustomData();
 
 		customData.remove(keyRatioMax);
 		customData.addProperty(keyRatioMax, amount);
 
-		checkFactionRaidableUpdate(faction, pre, getFactionRatioTimesTwo(faction));
+		checkFactionRaidableUpdate(faction, pre, getFactionRatioInternal(faction));
 	}
 
 	void ensureFactionRatioRemoved(Faction faction) {
@@ -211,22 +176,25 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	}
 
 	void setFactionRatioRemoved(Faction faction, int amount) {
-		int pre = getFactionRatioTimesTwo(faction);
+		int pre = getFactionRatioInternal(faction);
 		JsonObject customData = faction.getCustomData();
+		if (amount < 0) {
+			amount = 0;
+		}
 
 		customData.remove(keyRatioRemoved);
 		customData.addProperty(keyRatioRemoved, amount);
 
-		checkFactionRaidableUpdate(faction, pre, getFactionRatioTimesTwo(faction));
+		checkFactionRaidableUpdate(faction, pre, getFactionRatioInternal(faction));
 	}
 
-	int getFactionRatioTimesTwo(Faction faction) {
+	int getFactionRatioInternal(Faction faction) {
 		return getFactionRatioMax(faction) - getFactionRatioRemoved(faction);
 	}
 
 	String getFactionDisplayRatio(Faction faction) {
-		double result = getFactionRatioMax(faction) - getFactionRatioRemoved(faction);
-		return decimalFormat.format(result/2);
+		double result = getFactionRatioInternal(faction);
+		return decimalFormat.format(result/100);
 	}
 
 	void checkFactionRaidableUpdate(Faction faction, int pre, int post) {

@@ -16,9 +16,8 @@ public class RatioUpdateTask extends BukkitRunnable {
 	public void run() {
 		plugin.debug("updatetask");
 		for (Faction faction : FactionColl.get().getAll()) {
-			while ((plugin.getFactionRatioRemoved(faction) > 0) && plugin.getFactionTimeNext(faction) < plugin.getTime()) {
-				plugin.setFactionRatioRemoved(faction, plugin.getFactionRatioRemoved(faction) - 1);
-				plugin.setFactionTimeNext(faction, plugin.getFactionTimeNext(faction) + DeathToRaidable.timeout);
+			if ((plugin.getFactionRatioRemoved(faction) > 0) && (faction.getMPlayersWhereOnline(true).size() > 0)) {
+				plugin.setFactionRatioRemoved(faction, plugin.getFactionRatioRemoved(faction) - DeathToRaidable.timerRemove);
 			}
 		}
 	}
