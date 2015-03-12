@@ -34,8 +34,15 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	static int timeout = 1*60*60; //seconds
 	static long timer = 5*60*20; //ticks
 	BukkitTask ratioUpdateTask;
+	static boolean debug = false;
 
 	static NumberFormat decimalFormat = DecimalFormat.getInstance();
+
+	void debug(String out) {
+		if (debug) {
+			System.out.println("[DTR] "+out);
+		}
+	}
 
 	@Override
 	public void onEnable() {
@@ -52,6 +59,7 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 	}
 
 	void setupFaction(Faction faction) {
+		debug("setup "+faction.getName());
 		JsonObject customData = faction.getCustomData();
 		if (customData == null) {
 			faction.setCustomData(new JsonObject());
@@ -117,19 +125,15 @@ public class DeathToRaidable extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onFactionsMembershipChange(EventFactionsMembershipChange event) {
-		final String factionOld = event.getMPlayer().getFactionId();
-		final String factionNew = event.getNewFaction().getId();
+		final String faction = event.getNewFaction().getId();
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (FactionColl.get().containsId(factionOld)) {
-					updateFactionRatioMax(FactionColl.get().get(factionOld));
-				}
-				if (FactionColl.get().containsId(factionNew)) {
-					updateFactionRatioMax(FactionColl.get().get(factionNew));
+				if (FactionColl.get().containsId(faction)) {
+					updateFactionRatioMax(FactionColl.get().get(faction));
 				}
 			}
-		}.runTaskLater(this, 1L);
+		}.runTaskLater(this, 2L);
 	}
 
 	long getTime() {
